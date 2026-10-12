@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class AttendanceRecord extends Model
 {
@@ -34,5 +35,33 @@ class AttendanceRecord extends Model
     public function applications()
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function getTotalBreakTimeAttribute()
+    {
+        return $this->formatMinutes($this->breakMinutes());
+    }
+
+    public function getTotalTimeAttribute()
+    {
+        if (! $this->clock_out) {
+            return null;
+        }
+
+        $workMinutes = Carbon::parse($this->clock_in)->diffInMinutes(Carbon::parse($this->clock_out));
+
+        return $this->formatMinutes($workMinutes - $this->breakMinutes());
+    }
+
+    private function breakMinutes()
+    {
+        return $this->breaks
+            ->filter(fn($break) => $break->break_out)
+            ->sum(fn($break) => Carbon::parse($break->break_in)->diffInMinutes(Carbon::parse($break->break_out)));
+    }
+
+    private function formatMinutes($minutes)
+    {
+        return sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
     }
 }
