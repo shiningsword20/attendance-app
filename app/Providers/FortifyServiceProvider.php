@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Requests\LoginRequest;
 use App\Http\Responses\LoginResponse;
+use App\Http\Responses\LogoutResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
+use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,9 @@ class FortifyServiceProvider extends ServiceProvider
 
         // ログイン後の遷移先を、一般・管理者で出し分ける
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
+
+        // ログアウト後の遷移先を、一般・管理者で出し分ける
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     public function boot()
