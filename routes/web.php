@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\ApplicationController;
 
 // HOMEにアクセスしたらログイン画面表示
 Route::redirect('/', '/login');
@@ -21,4 +22,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/attendance/list', [AttendanceController::class, 'index']);
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show']);
     Route::post('/attendance/{id}', [AttendanceController::class, 'update']);
+    Route::get('/stamp_correction_request/list', [ApplicationController::class, 'index']);
 });
