@@ -42,7 +42,7 @@ class AttendanceRecordSeeder extends Seeder
         );
 
         $this->weekdaysOf(Carbon::now()->startOfMonth())
-            ->reject(fn ($day) => $day->isToday())
+            ->filter(fn($day) => $day->lt(Carbon::today()))
             ->take(17)
             ->values()
             ->each(fn ($day, $index) => $this->createAttendance($user, $day, $patterns[$index][0], $patterns[$index][1]));
