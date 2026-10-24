@@ -26,4 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/stamp_correction_request/list', [ApplicationController::class, 'index']);
     // 管理者：日次勤怠一覧
     Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index']);
+    // 管理者：勤怠詳細
+    Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'show']);
 });

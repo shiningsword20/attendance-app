@@ -32,4 +32,36 @@ class AdminAttendanceController extends Controller
 
         return view('admin.admin-attendance-list', compact('date', 'previousDay', 'nextDay', 'users', 'attendanceRecords'));
     }
+
+    public function show($id)
+    {
+        // 管理者以外は見られないようにする
+        abort_unless(Auth::user()->admin_status, 403);
+
+        $record = AttendanceRecord::with(['user', 'breaks'])->findOrFail($id);
+
+        // 名前欄には、勤怠の持ち主（一般ユーザー）の名前を表示する
+        $user = $record->user;
+
+        // Bladeで使う形に整える
+        $attendanceRecord = [
+            'id' => $record->id,
+            'year' => $record->date->format('Y年'),
+            'date' => $record->date->format('n月j日'),
+            'clock_in' => $this->formatTime($record->clock_in),
+            'clock_out' => $this->formatTime($record->clock_out),
+            'breaks' => $record->breaks->map(fn($break) => [
+                'break_in' => $this->formatTime($break->break_in),
+                'break_out' => $this->formatTime($break->break_out),
+            ])->values()->all(),
+            'comment' => $record->comment,
+        ];
+
+        return view('admin.admin-detail', compact('user', 'attendanceRecord'));
+    }
+
+    private function formatTime($time)
+    {
+        return $time ? Carbon::parse($time)->format('H:i') : '';
+    }
 }
