@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AdminAttendanceController;
+use App\Http\Controllers\StaffController;
 
 // HOMEにアクセスしたらログイン画面表示
 Route::redirect('/', '/login');
@@ -28,4 +29,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index']);
     // 管理者：勤怠詳細
     Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'show']);
+    // 管理者：スタッフ一覧
+    Route::get('/admin/staff/list', [StaffController::class, 'index']);
 });
