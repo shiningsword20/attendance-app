@@ -31,4 +31,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'show']);
     // 管理者：スタッフ一覧
     Route::get('/admin/staff/list', [StaffController::class, 'index']);
+    // 管理者：スタッフ別月次勤怠
+    Route::get('/admin/attendance/staff/{id}', [StaffController::class, 'show']);
 });
