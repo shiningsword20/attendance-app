@@ -45,4 +45,18 @@ class ApplicationController extends Controller
 
         return view('user.user-application-list', compact('user', 'formattedApplications'));
     }
+
+    public function show($attendance_correct_request_id)
+    {
+        // 管理者以外は見られないようにする
+        abort_unless(Auth::user()->admin_status, 403);
+
+        $application = Application::with(['attendanceRecord.user', 'proposalBreaks'])
+            ->findOrFail($attendance_correct_request_id);
+
+        // 名前欄には、申請したスタッフの名前を表示する
+        $user = $application->attendanceRecord->user;
+
+        return view('admin.admin-application-detail', compact('user', 'application'));
+    }
 }
