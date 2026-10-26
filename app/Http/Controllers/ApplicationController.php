@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ApplicationController extends Controller
 {
@@ -44,5 +46,59 @@ class ApplicationController extends Controller
         ]);
 
         return view('user.user-application-list', compact('user', 'formattedApplications'));
+    }
+
+    public function show($attendance_correct_request_id)
+    {
+        // 管理者以外は見られないようにする
+        abort_unless(Auth::user()->admin_status, 403);
+
+        $application = Application::with(['attendanceRecord.user', 'proposalBreaks'])
+            ->findOrFail($attendance_correct_request_id);
+
+        // 名前欄には、申請したスタッフの名前を表示する
+        $user = $application->attendanceRecord->user;
+
+        return view('admin.admin-application-detail', compact('user', 'application'));
+    }
+
+    public function approve($attendance_correct_request_id)
+    {
+        // 管理者以外は承認できないようにする
+        abort_unless(Auth::user()->admin_status, 403);
+
+        $application = Application::with(['attendanceRecord', 'applicationBreaks'])
+            ->findOrFail($attendance_correct_request_id);
+
+        // 承認済みなら何もしない
+        if ($application->is_approved) {
+            return redirect("/stamp_correction_request/approve/{$application->id}");
+        }
+
+        DB::transaction(function () use ($application) {
+            $attendanceRecord = $application->attendanceRecord;
+
+            // 勤怠を申請の内容で上書きする
+            $attendanceRecord->update([
+                'clock_in' => $application->clock_in,
+                'clock_out' => $application->clock_out,
+                'comment' => $application->comment,
+            ]);
+
+            // 休憩は入れ替える
+            $attendanceRecord->breaks()->delete();
+            $attendanceRecord->breaks()->createMany(
+                $application->applicationBreaks->map(fn($break) => [
+                    'break_in' => $break->break_in,
+                    'break_out' => $break->break_out,
+                ])->all()
+            );
+
+            // 申請を承認済みにする
+            $application->is_approved = true;
+            $application->save();
+        });
+
+        return redirect("/stamp_correction_request/approve/{$application->id}");
     }
 }
