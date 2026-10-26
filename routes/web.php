@@ -36,4 +36,8 @@ Route::middleware('auth')->group(function () {
     // 管理者：修正申請の詳細・承認
     Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [ApplicationController::class, 'show']);
     Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [ApplicationController::class, 'approve']);
+    // 提供Bladeのリンク先から、画面設計の勤怠詳細へ転送する
+    Route::get('/attendance/{id}', [AttendanceController::class, 'redirectToDetail'])->whereNumber('id');
+    // 提供Bladeのリンク先から、申請対象の勤怠詳細へ転送する
+    Route::get('/application/{id}', [ApplicationController::class, 'redirectToAttendance'])->whereNumber('id');
 });

@@ -55,7 +55,7 @@
                         <p class="table__description--item">{{ $application['application_date'] }}</p>
                     </td>
                     <td class="table__description">
-                        <a class="table__item--detail-link" href="{{ url('/attendance/detail/' . $application['attendance_record_id']) }}">詳細</a>
+                        <a class="table__item--detail-link" href="{{ url('/application/' . $application['id']) }}">詳細</a>
                     </td>
                 </tr>
                 @endif
@@ -103,7 +103,7 @@
                         <p class="table__description--item">{{ $application['application_date'] }}</p>
                     </td>
                     <td class="table__description">
-                        <a class="table__item--detail-link" href="{{ url('/attendance/detail/' . $application['attendance_record_id']) }}">詳細</a>
+                        <a class="table__item--detail-link" href="{{ url('/application/' . $application['id']) }}">詳細</a>
                     </td>
                 </tr>
                 @endif
