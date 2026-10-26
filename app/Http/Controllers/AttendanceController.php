@@ -178,4 +178,14 @@ class AttendanceController extends Controller
     {
         return $time ? Carbon::parse($time)->format('H:i') : '';
     }
+
+    public function redirectToDetail($id)
+    {
+        // 管理者は管理者の勤怠詳細へ、一般ユーザーは自分の勤怠詳細へ
+        if (Auth::user()->admin_status) {
+            return redirect("/admin/attendance/{$id}");
+        }
+
+        return redirect("/attendance/detail/{$id}");
+    }
 }

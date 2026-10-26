@@ -59,4 +59,16 @@ class Application extends Model
     {
         return $this->is_approved ? '承認済み' : '承認待ち';
     }
+
+    // 申請者（勤怠の持ち主）を、勤怠レコード経由で取得する
+    public function user()
+    {
+        return $this->hasOneThrough(User::class, AttendanceRecord::class, 'id', 'id', 'attendance_record_id', 'user_id');
+    }
+
+    // 申請日時（作成日時）
+    public function getApplicationDateAttribute()
+    {
+        return $this->created_at;
+    }
 }

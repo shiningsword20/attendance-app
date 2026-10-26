@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -14,21 +13,13 @@ class ApplicationController extends Controller
         $user = Auth::user();
 
         // 管理者：全ユーザーの申請を、新しい順に取得する
+        // ★提供Bladeが $applications（モデルのまま）を使うので、配列に整えずに渡す
         if ($user->admin_status) {
-            $applications = Application::with('attendanceRecord.user')
+            $applications = Application::with(['attendanceRecord', 'user'])
                 ->latest()
                 ->get();
 
-            $formattedApplications = $applications->map(fn($application) => [
-                'id' => $application->id,
-                'approval_status' => $application->is_approved ? '承認済み' : '承認待ち',
-                'name' => $application->attendanceRecord->user->name,
-                'date' => $application->attendanceRecord->date->format('Y/m/d'),
-                'comment' => $application->comment,
-                'application_date' => $application->created_at->format('Y/m/d'),
-            ]);
-
-            return view('admin.admin-application-list', compact('formattedApplications'));
+            return view('admin.admin-application-list', compact('applications'));
         }
 
         // 一般ユーザー：自分の勤怠に対する申請を、新しい順に取得する
@@ -38,6 +29,7 @@ class ApplicationController extends Controller
             ->get();
 
         $formattedApplications = $applications->map(fn($application) => [
+            'id' => $application->id, // ★提供Bladeの詳細リンク（/application/{id}）で使う
             'attendance_record_id' => $application->attendance_record_id,
             'approval_status' => $application->is_approved ? '承認済み' : '承認待ち',
             'date' => $application->attendanceRecord->date->format('Y/m/d'),
@@ -100,5 +92,15 @@ class ApplicationController extends Controller
         });
 
         return redirect("/stamp_correction_request/approve/{$application->id}");
+    }
+
+    // ★提供Bladeの申請一覧の「詳細」（/application/{id}）から、申請対象の勤怠詳細へ転送する
+    public function redirectToAttendance($id)
+    {
+        // 自分の申請だけ開けるようにする
+        $application = Application::whereHas('attendanceRecord', fn($query) => $query->where('user_id', Auth::id()))
+            ->findOrFail($id);
+
+        return redirect("/attendance/detail/{$application->attendance_record_id}");
     }
 }
