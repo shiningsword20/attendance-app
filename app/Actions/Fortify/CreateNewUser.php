@@ -12,7 +12,7 @@ class CreateNewUser implements CreatesNewUsers
 {
     public function create(array $input)
     {
-        $request = new RegisterRequest();
+        $request = new RegisterRequest;
 
         Validator::make($input, $request->rules(), $request->messages())->validate();
 

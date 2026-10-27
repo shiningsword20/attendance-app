@@ -42,7 +42,7 @@ class StaffController extends Controller
             ->with('breaks')
             ->whereBetween('date', [$date->copy()->startOfMonth()->toDateString(), $date->copy()->endOfMonth()->toDateString()])
             ->get()
-            ->keyBy(fn($record) => $record->date->toDateString());
+            ->keyBy(fn ($record) => $record->date->toDateString());
 
         // 月の全日を並べ、勤怠が無い日は空欄にする
         $formattedAttendanceRecords = collect(CarbonPeriod::create($date->copy()->startOfMonth(), $date->copy()->endOfMonth()))

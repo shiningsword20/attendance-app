@@ -50,7 +50,7 @@ class AdminAttendanceController extends Controller
             'date' => $record->date->format('n月j日'),
             'clock_in' => $this->formatTime($record->clock_in),
             'clock_out' => $this->formatTime($record->clock_out),
-            'breaks' => $record->breaks->map(fn($break) => [
+            'breaks' => $record->breaks->map(fn ($break) => [
                 'break_in' => $this->formatTime($break->break_in),
                 'break_out' => $this->formatTime($break->break_out),
             ])->values()->all(),

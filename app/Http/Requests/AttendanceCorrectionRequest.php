@@ -50,6 +50,7 @@ class AttendanceCorrectionRequest extends FormRequest
 
             if ($clockIn >= $clockOut) {
                 $validator->errors()->add('new_clock_in', '出勤時間もしくは退勤時間が不適切な値です');
+
                 return;
             }
 
