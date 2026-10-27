@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class AttendanceRecord extends Model
 {
@@ -56,8 +56,8 @@ class AttendanceRecord extends Model
     private function breakMinutes()
     {
         return $this->breaks
-            ->filter(fn($break) => $break->break_out)
-            ->sum(fn($break) => Carbon::parse($break->break_in)->diffInMinutes(Carbon::parse($break->break_out)));
+            ->filter(fn ($break) => $break->break_out)
+            ->sum(fn ($break) => Carbon::parse($break->break_in)->diffInMinutes(Carbon::parse($break->break_out)));
     }
 
     private function formatMinutes($minutes)

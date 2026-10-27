@@ -24,11 +24,11 @@ class ApplicationController extends Controller
 
         // 一般ユーザー：自分の勤怠に対する申請を、新しい順に取得する
         $applications = Application::with('attendanceRecord')
-            ->whereHas('attendanceRecord', fn($query) => $query->where('user_id', $user->id))
+            ->whereHas('attendanceRecord', fn ($query) => $query->where('user_id', $user->id))
             ->latest()
             ->get();
 
-        $formattedApplications = $applications->map(fn($application) => [
+        $formattedApplications = $applications->map(fn ($application) => [
             'id' => $application->id, // ★提供Bladeの詳細リンク（/application/{id}）で使う
             'attendance_record_id' => $application->attendance_record_id,
             'approval_status' => $application->is_approved ? '承認済み' : '承認待ち',
@@ -80,7 +80,7 @@ class ApplicationController extends Controller
             // 休憩は入れ替える
             $attendanceRecord->breaks()->delete();
             $attendanceRecord->breaks()->createMany(
-                $application->applicationBreaks->map(fn($break) => [
+                $application->applicationBreaks->map(fn ($break) => [
                     'break_in' => $break->break_in,
                     'break_out' => $break->break_out,
                 ])->all()
@@ -98,7 +98,7 @@ class ApplicationController extends Controller
     public function redirectToAttendance($id)
     {
         // 自分の申請だけ開けるようにする
-        $application = Application::whereHas('attendanceRecord', fn($query) => $query->where('user_id', Auth::id()))
+        $application = Application::whereHas('attendanceRecord', fn ($query) => $query->where('user_id', Auth::id()))
             ->findOrFail($id);
 
         return redirect("/attendance/detail/{$application->attendance_record_id}");

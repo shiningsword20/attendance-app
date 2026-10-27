@@ -27,7 +27,7 @@ class AttendanceController extends Controller
             ->with('breaks')
             ->whereBetween('date', [$date->copy()->startOfMonth()->toDateString(), $date->copy()->endOfMonth()->toDateString()])
             ->get()
-            ->keyBy(fn($record) => $record->date->toDateString());
+            ->keyBy(fn ($record) => $record->date->toDateString());
 
         $formattedAttendanceRecords = collect(CarbonPeriod::create($date->copy()->startOfMonth(), $date->copy()->endOfMonth()))
             ->map(function ($day) use ($attendanceRecords) {
@@ -113,7 +113,7 @@ class AttendanceController extends Controller
             'date' => $attendanceRecord->date->format('n月j日'),
             'clock_in' => $this->formatTime($source->clock_in),
             'clock_out' => $this->formatTime($source->clock_out),
-            'breaks' => $breaks->map(fn($break) => [
+            'breaks' => $breaks->map(fn ($break) => [
                 'break_in' => $this->formatTime($break->break_in),
                 'break_out' => $this->formatTime($break->break_out),
             ])->values()->all(),
@@ -129,11 +129,11 @@ class AttendanceController extends Controller
 
         // 入力された休憩のうち、開始・終了がそろっているものだけを使う
         $breaks = collect($request->input('new_break_in', []))
-            ->map(fn($breakIn, $index) => [
+            ->map(fn ($breakIn, $index) => [
                 'break_in' => $breakIn,
                 'break_out' => $request->input("new_break_out.{$index}"),
             ])
-            ->filter(fn($break) => $break['break_in'] && $break['break_out'])
+            ->filter(fn ($break) => $break['break_in'] && $break['break_out'])
             ->values();
 
         // 管理者：勤怠を直接修正
