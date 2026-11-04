@@ -57,12 +57,16 @@ class AttendanceCorrectionRequest extends FormRequest
             foreach ($this->input('new_break_in', []) as $index => $breakIn) {
                 $breakOut = $this->input("new_break_out.{$index}");
 
-                if ($breakIn && ($breakIn < $clockIn || $breakIn > $clockOut)) {
-                    $validator->errors()->add("new_break_in.{$index}", '休憩時間が不適切な値です');
+                if ($validator->errors()->hasAny(["new_break_in.{$index}", "new_break_out.{$index}"])) {
+                    continue;
                 }
 
-                if ($breakOut && $breakOut > $clockOut) {
+                if ($breakIn && ($breakIn < $clockIn || $breakIn > $clockOut)) {
+                    $validator->errors()->add("new_break_in.{$index}", '休憩時間が不適切な値です');
+                } elseif ($breakOut && $breakOut > $clockOut) {
                     $validator->errors()->add("new_break_out.{$index}", '休憩時間もしくは退勤時間が不適切な値です');
+                } elseif ($breakIn && $breakOut && $breakOut <= $breakIn) {
+                    $validator->errors()->add("new_break_out.{$index}", '休憩時間が不適切な値です');
                 }
             }
         });

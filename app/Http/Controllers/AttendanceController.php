@@ -102,13 +102,20 @@ class AttendanceController extends Controller
 
         $pendingApplication = $attendanceRecord->applications->firstWhere('is_approved', false);
 
+        // 承認済みの申請（あれば最新のもの）
+        $approvedApplication = $attendanceRecord->applications
+            ->where('is_approved', true)
+            ->sortByDesc('id')
+            ->first();
+
         // 承認待ちの申請があれば申請内容を、無ければ勤怠の内容を表示する
         $source = $pendingApplication ?? $attendanceRecord;
         $breaks = $pendingApplication ? $pendingApplication->applicationBreaks : $attendanceRecord->breaks;
 
         $data = [
             'id' => $attendanceRecord->id,
-            'application' => $pendingApplication,
+            // 承認待ち・承認済みの申請があれば、閲覧のみにする
+            'application' => $pendingApplication ?? $approvedApplication,
             'year' => $attendanceRecord->date->format('Y年'),
             'date' => $attendanceRecord->date->format('n月j日'),
             'clock_in' => $this->formatTime($source->clock_in),
@@ -151,7 +158,8 @@ class AttendanceController extends Controller
                 $attendanceRecord->breaks()->createMany($breaks->all());
             });
 
-            return redirect("/admin/attendance/{$attendanceRecord->id}");
+            // 修正した勤怠の日付の、日次勤怠一覧へ戻る
+            return redirect('/admin/attendance/list?date='.$attendanceRecord->date->format('Y-m-d'));
         }
 
         // 一般ユーザー：修正申請を作成
