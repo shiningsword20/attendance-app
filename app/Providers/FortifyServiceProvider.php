@@ -18,6 +18,8 @@ use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
+use App\Http\Responses\EmailVerificationNotificationSentResponse;
+use Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse as EmailVerificationNotificationSentResponseContract;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -31,6 +33,9 @@ class FortifyServiceProvider extends ServiceProvider
 
         // ログアウト後の遷移先を、一般・管理者で出し分ける
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
+
+        // 認証メール再送後、誘導画面にメッセージを表示する
+        $this->app->singleton(EmailVerificationNotificationSentResponseContract::class, EmailVerificationNotificationSentResponse::class);
     }
 
     public function boot()
@@ -47,6 +52,10 @@ class FortifyServiceProvider extends ServiceProvider
             }
 
             return view('user.user-login');
+        });
+
+        Fortify::verifyEmailView(function () {
+            return view('auth.verify-email');
         });
 
         Fortify::authenticateUsing(function (Request $request) {

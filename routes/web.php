@@ -17,7 +17,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // ログイン済みユーザー処理
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/admin/logout', [AuthenticatedSessionController::class, 'destroy']);
     Route::get('/attendance', [AttendanceController::class, 'create']);
     Route::post('/attendance', [AttendanceController::class, 'store']);
