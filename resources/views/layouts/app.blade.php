@@ -21,15 +21,10 @@
             <form action="/logout" method="post">
                 @csrf
                 <nav class="inner__group">
-                    @if(request()->is('attendance') && Auth::user()->attendance_status === '退勤済')
-                        <a class="inner__group--item" href="/attendance/list">今月の出勤一覧</a>
-                        <a class="inner__group--item" href="/stamp_correction_request/list">申請一覧</a>
-                    @else
-                        <a class="inner__group--item" href="/attendance">勤怠</a>
-                        <a class="inner__group--item" href="/attendance/list">勤怠一覧</a>
-                        <a class="inner__group--item" href="/stamp_correction_request/list">申請</a>
-                        <a class="inner__group--item" href="/attendance/report">レポート</a>
-                    @endif
+                    <a class="inner__group--item" href="/attendance">勤怠</a>
+                    <a class="inner__group--item" href="/attendance/list">勤怠一覧</a>
+                    <a class="inner__group--item" href="/stamp_correction_request/list">申請</a>
+                    <a class="inner__group--item" href="/attendance/report">レポート</a>
                     <button class="inner__group--item logout-button">
                         ログアウト
                     </button>
