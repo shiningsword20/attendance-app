@@ -1,66 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# coachtech 勤怠管理アプリ
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 環境構築
 
-## About Laravel
+### Dockerビルド
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. リポジトリをクローン
+   ```bash
+   git clone https://github.com/shiningsword20/attendance-app.git
+   cd attendance-app
+   ```
+2. Composerパッケージをインストール（vendor がないため、Sail起動前に実行）
+   ```bash
+   docker run --rm \
+     -u "$(id -u):$(id -g)" \
+     -v "$(pwd):/var/www/html" \
+     -w /var/www/html \
+     laravelsail/php82-composer:latest \
+     composer install --ignore-platform-reqs
+   ```
+3. `.env` を作成
+   ```bash
+   cp .env.example .env
+   ```
+4. `.env` のDB設定を以下に変更
+   ```text
+   DB_CONNECTION=mysql
+   DB_HOST=mysql
+   DB_PORT=3306
+   DB_DATABASE=laravel
+   DB_USERNAME=sail
+   DB_PASSWORD=password
+   ```
+   メール設定は `.env.example` のまま（`MAIL_HOST=mailpit` / `MAIL_PORT=1025`）で動作します。
+5. Sailのエイリアスを設定（以降のコマンドは `sail` で実行します）
+   ```bash
+   alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+   ```
+6. コンテナをビルド・起動
+   ```bash
+   sail up -d --build
+   ```
+   ※ Apple Silicon（M1〜M4）の場合は、`compose.yaml` の mysql に `platform: 'linux/amd64'` を追記してください。
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Laravel環境構築
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. アプリケーションキーを作成
+   ```bash
+   sail artisan key:generate
+   ```
+2. マイグレーション・シーディングを実行
+   ```bash
+   sail artisan migrate --seed
+   ```
+3. フロントエンド（Vite）を起動
+   ```bash
+   sail npm install
+   sail npm run dev
+   ```
 
-## Learning Laravel
+## 使用技術（実行環境）
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.2
+- Laravel 10.x
+- Laravel Fortify（認証）
+- MySQL 8.4
+- Laravel Sail（Docker）
+- Vite 5
+- phpMyAdmin / Mailpit
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ER図
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```mermaid
+erDiagram
+    users ||--o{ attendance_records : "1対多"
+    attendance_records ||--o{ break_times : "1対多"
+    attendance_records ||--o{ applications : "1対多"
+    applications ||--o{ application_breaks : "1対多"
 
-## Laravel Sponsors
+    users {
+        bigint id PK
+        varchar name
+        varchar email UK
+        timestamp email_verified_at
+        varchar password
+        boolean admin_status
+        varchar remember_token
+        timestamp created_at
+        timestamp updated_at
+    }
+    attendance_records {
+        bigint id PK
+        bigint user_id FK
+        date date
+        time clock_in
+        time clock_out
+        varchar comment
+        timestamp created_at
+        timestamp updated_at
+    }
+    break_times {
+        bigint id PK
+        bigint attendance_record_id FK
+        time break_in
+        time break_out
+        timestamp created_at
+        timestamp updated_at
+    }
+    applications {
+        bigint id PK
+        bigint attendance_record_id FK
+        time clock_in
+        time clock_out
+        varchar comment
+        boolean is_approved
+        timestamp created_at
+        timestamp updated_at
+    }
+    application_breaks {
+        bigint id PK
+        bigint application_id FK
+        time break_in
+        time break_out
+        timestamp created_at
+        timestamp updated_at
+    }
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+※ attendance_records は `user_id` と `date` の組み合わせでユニーク（1ユーザー1日1件）です。
 
-### Premium Partners
+## URL
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- 開発環境（一般ユーザーログイン）：http://localhost/login
+- 会員登録：http://localhost/register
+- 管理者ログイン：http://localhost/admin/login
+- phpMyAdmin：http://localhost:8080
+- Mailpit：http://localhost:8025
 
-## Contributing
+## ログイン情報
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+シーディング（`sail artisan migrate --seed`）で以下のユーザーが作成されます。いずれもメール認証済みです。
 
-## Code of Conduct
+| 権限 | 名前 | メールアドレス | パスワード | ログインURL |
+| --- | --- | --- | --- | --- |
+| 一般ユーザー | ユーザー1 | user1@example.com | password | http://localhost/login |
+| 一般ユーザー | ユーザー2 | user2@example.com | password | http://localhost/login |
+| 管理者 | ユーザー3 | user3@example.com | password | http://localhost/admin/login |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### ダミーデータ（勤怠・休憩）
 
-## Security Vulnerabilities
+- user1：過去5か月は各月平日15日の通常勤務（9:00〜18:00）、当月は17日分（通常10・残業3・遅刻2・早退1・長時間労働1）。全レコードに休憩12:00〜13:00を登録。打刻を確認できるよう、当日分は作成していません。
+- user2・user3：2か月前の1日から前日までの平日に通常勤務（9:00〜18:00、休憩12:00〜13:00）
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## テスト
 
-## License
+PHPUnitによるFeatureテスト（テストケース一覧 ID1〜15）を用意しています。テストは `testing` データベースを使用します（Sailのmysqlコンテナ初回起動時に自動作成されます）。
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+sail artisan test
+```
