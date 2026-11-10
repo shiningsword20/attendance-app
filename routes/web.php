@@ -33,6 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/staff/list', [StaffController::class, 'index']);
     // 管理者：スタッフ別月次勤怠
     Route::get('/admin/attendance/staff/{id}', [StaffController::class, 'show']);
+    // 管理者：スタッフ別月次勤怠のCSV出力
+    Route::post('/export', [StaffController::class, 'export']);
     // 管理者：修正申請の詳細・承認
     Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [ApplicationController::class, 'show']);
     Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [ApplicationController::class, 'approve']);
