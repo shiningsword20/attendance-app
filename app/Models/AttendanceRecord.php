@@ -44,13 +44,25 @@ class AttendanceRecord extends Model
 
     public function getTotalTimeAttribute()
     {
+        $workMinutes = $this->workMinutes();
+
+        return $workMinutes === null ? null : $this->formatMinutes($workMinutes);
+    }
+
+    /**
+     * 休憩を除いた労働時間（分）を返す。退勤していない場合は null
+     *
+     * @return int|null 労働時間（分）
+     */
+    public function workMinutes(): ?int
+    {
         if (! $this->clock_out) {
             return null;
         }
 
-        $workMinutes = Carbon::parse($this->clock_in)->diffInMinutes(Carbon::parse($this->clock_out));
+        $stayMinutes = Carbon::parse($this->clock_in)->diffInMinutes(Carbon::parse($this->clock_out));
 
-        return $this->formatMinutes($workMinutes - $this->breakMinutes());
+        return $stayMinutes - $this->breakMinutes();
     }
 
     private function breakMinutes()
