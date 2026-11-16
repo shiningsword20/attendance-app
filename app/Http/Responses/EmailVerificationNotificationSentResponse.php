@@ -3,6 +3,7 @@
 namespace App\Http\Responses;
 
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse as EmailVerificationNotificationSentResponseContract;
 
 class EmailVerificationNotificationSentResponse implements EmailVerificationNotificationSentResponseContract
@@ -10,7 +11,7 @@ class EmailVerificationNotificationSentResponse implements EmailVerificationNoti
     /**
      * 認証メールを再送したあと、メール認証誘導画面に戻してメッセージを表示する
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      */
     public function toResponse($request): RedirectResponse
     {

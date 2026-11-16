@@ -39,12 +39,12 @@ class AttendanceReportController extends Controller
             ->get();
 
         // 労働時間を出せるのは退勤済みの日だけ
-        $completedRecords = $attendanceRecords->filter(fn(AttendanceRecord $record) => $record->clock_out);
+        $completedRecords = $attendanceRecords->filter(fn (AttendanceRecord $record) => $record->clock_out);
 
         $summary = $this->summary($completedRecords);
         $monthlyTrend = $this->monthlyTrend($completedRecords, $startMonth);
         $anomalies = $this->anomalies(
-            $attendanceRecords->filter(fn(AttendanceRecord $record) => $record->date->isSameMonth($currentMonth))
+            $attendanceRecords->filter(fn (AttendanceRecord $record) => $record->date->isSameMonth($currentMonth))
         );
 
         return view('reports.index', compact('summary', 'monthlyTrend', 'anomalies'));
@@ -58,11 +58,11 @@ class AttendanceReportController extends Controller
      */
     private function summary(Collection $records): array
     {
-        $workMinutes = $records->map(fn(AttendanceRecord $record) => $record->workMinutes());
+        $workMinutes = $records->map(fn (AttendanceRecord $record) => $record->workMinutes());
 
         return [
             'total_work_minutes' => $workMinutes->sum(),
-            'total_overtime_minutes' => $workMinutes->sum(fn(int $minutes) => $this->overtimeMinutes($minutes)),
+            'total_overtime_minutes' => $workMinutes->sum(fn (int $minutes) => $this->overtimeMinutes($minutes)),
             'avg_work_minutes' => (int) round($workMinutes->avg() ?? 0),
         ];
     }
@@ -76,18 +76,18 @@ class AttendanceReportController extends Controller
      */
     private function monthlyTrend(Collection $records, Carbon $startMonth): array
     {
-        $recordsByMonth = $records->groupBy(fn(AttendanceRecord $record) => $record->date->format('Y-m'));
+        $recordsByMonth = $records->groupBy(fn (AttendanceRecord $record) => $record->date->format('Y-m'));
 
         return collect(range(0, self::REPORT_MONTHS - 1))
-            ->map(fn(int $offset) => $startMonth->copy()->addMonths($offset))
+            ->map(fn (int $offset) => $startMonth->copy()->addMonths($offset))
             ->map(function (Carbon $month) use ($recordsByMonth) {
                 $workMinutes = $recordsByMonth->get($month->format('Y-m'), collect())
-                    ->map(fn(AttendanceRecord $record) => $record->workMinutes());
+                    ->map(fn (AttendanceRecord $record) => $record->workMinutes());
 
                 return [
                     'month' => $month->format('Y/m'),
                     'work_minutes' => $workMinutes->sum(),
-                    'overtime_minutes' => $workMinutes->sum(fn(int $minutes) => $this->overtimeMinutes($minutes)),
+                    'overtime_minutes' => $workMinutes->sum(fn (int $minutes) => $this->overtimeMinutes($minutes)),
                 ];
             })
             ->all();
@@ -103,13 +103,13 @@ class AttendanceReportController extends Controller
     {
         return [
             'late_count' => $records
-                ->filter(fn(AttendanceRecord $record) => $record->clock_in > self::WORK_START_TIME)
+                ->filter(fn (AttendanceRecord $record) => $record->clock_in > self::WORK_START_TIME)
                 ->count(),
             'early_leave_count' => $records
-                ->filter(fn(AttendanceRecord $record) => $record->clock_out && $record->clock_out < self::WORK_END_TIME)
+                ->filter(fn (AttendanceRecord $record) => $record->clock_out && $record->clock_out < self::WORK_END_TIME)
                 ->count(),
             'long_work_count' => $records
-                ->filter(fn(AttendanceRecord $record) => $record->workMinutes() > self::LONG_WORK_MINUTES)
+                ->filter(fn (AttendanceRecord $record) => $record->workMinutes() > self::LONG_WORK_MINUTES)
                 ->count(),
         ];
     }

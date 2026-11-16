@@ -28,7 +28,7 @@ class UpdateAttendanceRecordRequest extends StoreAttendanceRecordRequest
                     ->ignore($attendanceRecord),
             ],
             'clock_in' => ['sometimes', 'required', 'date_format:H:i:s'],
-            'clock_out' => ['nullable', 'date_format:H:i:s', 'after:' . $clockInToCompare],
+            'clock_out' => ['nullable', 'date_format:H:i:s', 'after:'.$clockInToCompare],
             'comment' => ['nullable', 'string', 'max:255'],
         ];
     }

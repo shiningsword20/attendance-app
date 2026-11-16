@@ -100,8 +100,8 @@ class AttendanceRecord extends Model
     private function breakMinutes(): int
     {
         return $this->breaks
-            ->filter(fn($break) => $break->break_out)
-            ->sum(fn($break) => Carbon::parse($break->break_in)->diffInMinutes(Carbon::parse($break->break_out)));
+            ->filter(fn ($break) => $break->break_out)
+            ->sum(fn ($break) => Carbon::parse($break->break_in)->diffInMinutes(Carbon::parse($break->break_out)));
     }
 
     /**

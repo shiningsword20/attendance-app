@@ -70,7 +70,7 @@ class StaffController extends Controller
         $date = Carbon::createFromFormat('!Y-m', $request->input('year_month'));
 
         $csvRows = $this->monthlyAttendanceRows($user, $date)
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 $row['date'],
                 $row['clock_in'],
                 $row['clock_out'],
@@ -79,7 +79,7 @@ class StaffController extends Controller
             ])
             ->prepend(['日付', '出勤', '退勤', '休憩', '合計']);
 
-        $fileName = $user->name . '_' . $date->format('Y-m') . '_勤怠.csv';
+        $fileName = $user->name.'_'.$date->format('Y-m').'_勤怠.csv';
 
         return response()->streamDownload(function () use ($csvRows) {
             $stream = fopen('php://output', 'w');
@@ -87,7 +87,7 @@ class StaffController extends Controller
             // Excelで開いたときに文字化けしないよう、UTF-8のBOMを付ける
             fwrite($stream, "\xEF\xBB\xBF");
 
-            $csvRows->each(fn($row) => fputcsv($stream, $row));
+            $csvRows->each(fn ($row) => fputcsv($stream, $row));
 
             fclose($stream);
         }, $fileName, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -107,7 +107,7 @@ class StaffController extends Controller
             ->with('breaks')
             ->whereBetween('date', [$date->copy()->startOfMonth()->toDateString(), $date->copy()->endOfMonth()->toDateString()])
             ->get()
-            ->keyBy(fn($record) => $record->date->toDateString());
+            ->keyBy(fn ($record) => $record->date->toDateString());
 
         return collect(CarbonPeriod::create($date->copy()->startOfMonth(), $date->copy()->endOfMonth()))
             ->map(function ($day) use ($attendanceRecords) {

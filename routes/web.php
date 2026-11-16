@@ -3,10 +3,10 @@
 use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\StaffController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
-use App\Http\Controllers\AttendanceReportController;
 
 // HOMEにアクセスしたらログイン画面表示
 Route::redirect('/', '/login');

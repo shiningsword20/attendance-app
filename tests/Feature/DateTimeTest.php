@@ -12,7 +12,7 @@ class DateTimeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_現在の日時情報がUIと同じ形式で出力されている(): void
+    public function test_現在の日時情報が_u_iと同じ形式で出力されている(): void
     {
         // 現在日時を固定する（2026年11月4日(水) 09:30）
         $this->travelTo(Carbon::create(2026, 11, 4, 9, 30, 0));
