@@ -92,8 +92,8 @@ class AttendanceReportTest extends TestCase
             'total_overtime_minutes' => 0,
             'avg_work_minutes' => 0,
         ]);
-        $response->assertViewHas('monthlyTrend', fn(array $monthlyTrend) => count($monthlyTrend) === 6
-            && collect($monthlyTrend)->every(fn(array $row) => $row['work_minutes'] === 0 && $row['overtime_minutes'] === 0));
+        $response->assertViewHas('monthlyTrend', fn (array $monthlyTrend) => count($monthlyTrend) === 6
+            && collect($monthlyTrend)->every(fn (array $row) => $row['work_minutes'] === 0 && $row['overtime_minutes'] === 0));
         $response->assertViewHas('anomalies', [
             'late_count' => 0,
             'early_leave_count' => 0,

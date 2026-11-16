@@ -66,7 +66,7 @@ class PublicApiWriteTest extends TestCase
     {
         $record = $this->createRecord();
 
-        $response = $this->putJson('/api/v1/attendance-records/' . $record->id, [
+        $response = $this->putJson('/api/v1/attendance-records/'.$record->id, [
             'clock_out' => '19:00:00',
             'comment' => '残業',
         ]);
@@ -91,7 +91,7 @@ class PublicApiWriteTest extends TestCase
     {
         $record = $this->createRecord();
 
-        $response = $this->deleteJson('/api/v1/attendance-records/' . $record->id);
+        $response = $this->deleteJson('/api/v1/attendance-records/'.$record->id);
 
         $response->assertStatus(204);
         $this->assertDatabaseMissing('attendance_records', ['id' => $record->id]);

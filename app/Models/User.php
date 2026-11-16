@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -29,19 +30,34 @@ class User extends Authenticatable implements MustVerifyEmail
         'admin_status' => 'boolean',
     ];
 
-    public function attendanceRecords()
+    /**
+     * ユーザーの勤怠
+     *
+     * @return HasMany<AttendanceRecord>
+     */
+    public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
     }
 
-    public function todayAttendanceRecord()
+    /**
+     * 今日の勤怠（無ければ null）
+     *
+     * @return AttendanceRecord|null 今日の勤怠
+     */
+    public function todayAttendanceRecord(): ?AttendanceRecord
     {
         return $this->attendanceRecords()
             ->where('date', today()->toDateString())
             ->first();
     }
 
-    public function getAttendanceStatusAttribute()
+    /**
+     * 今日の勤怠ステータス（勤務外・出勤中・休憩中・退勤済）
+     *
+     * @return string 勤怠ステータス
+     */
+    public function getAttendanceStatusAttribute(): string
     {
         $todayRecord = $this->todayAttendanceRecord();
 

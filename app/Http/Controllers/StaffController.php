@@ -6,6 +6,7 @@ use App\Http\Requests\ExportAttendanceRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StaffController extends Controller
 {
-    public function index()
+    /**
+     * スタッフ一覧（管理者）を表示する
+     *
+     * @return View スタッフ一覧画面
+     */
+    public function index(): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -24,7 +30,14 @@ class StaffController extends Controller
         return view('admin.staff-list', compact('users'));
     }
 
-    public function show(Request $request, $id)
+    /**
+     * スタッフ別の月次勤怠一覧（管理者）を表示する
+     *
+     * @param  Request  $request  表示する月（?date=Y-m、無ければ今月）
+     * @param  string  $id  スタッフ（一般ユーザー）のID
+     * @return View スタッフ別勤怠一覧画面
+     */
+    public function show(Request $request, string $id): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -57,7 +70,7 @@ class StaffController extends Controller
         $date = Carbon::createFromFormat('!Y-m', $request->input('year_month'));
 
         $csvRows = $this->monthlyAttendanceRows($user, $date)
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 $row['date'],
                 $row['clock_in'],
                 $row['clock_out'],
@@ -66,7 +79,7 @@ class StaffController extends Controller
             ])
             ->prepend(['日付', '出勤', '退勤', '休憩', '合計']);
 
-        $fileName = $user->name . '_' . $date->format('Y-m') . '_勤怠.csv';
+        $fileName = $user->name.'_'.$date->format('Y-m').'_勤怠.csv';
 
         return response()->streamDownload(function () use ($csvRows) {
             $stream = fopen('php://output', 'w');
@@ -74,7 +87,7 @@ class StaffController extends Controller
             // Excelで開いたときに文字化けしないよう、UTF-8のBOMを付ける
             fwrite($stream, "\xEF\xBB\xBF");
 
-            $csvRows->each(fn($row) => fputcsv($stream, $row));
+            $csvRows->each(fn ($row) => fputcsv($stream, $row));
 
             fclose($stream);
         }, $fileName, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -94,7 +107,7 @@ class StaffController extends Controller
             ->with('breaks')
             ->whereBetween('date', [$date->copy()->startOfMonth()->toDateString(), $date->copy()->endOfMonth()->toDateString()])
             ->get()
-            ->keyBy(fn($record) => $record->date->toDateString());
+            ->keyBy(fn ($record) => $record->date->toDateString());
 
         return collect(CarbonPeriod::create($date->copy()->startOfMonth(), $date->copy()->endOfMonth()))
             ->map(function ($day) use ($attendanceRecords) {

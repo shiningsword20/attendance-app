@@ -32,7 +32,7 @@ class PublicApiAuthTest extends TestCase
 
     public function test_未認証の場合_書き込み系で401が返る(): void
     {
-        $url = '/api/v1/attendance-records/' . $this->record->id;
+        $url = '/api/v1/attendance-records/'.$this->record->id;
 
         $this->postJson('/api/v1/attendance-records', [])
             ->assertStatus(401)
@@ -48,7 +48,7 @@ class PublicApiAuthTest extends TestCase
     public function test_認証済みユーザーは自分の勤怠を更新_削除できる(): void
     {
         Sanctum::actingAs($this->owner, ['*']);
-        $url = '/api/v1/attendance-records/' . $this->record->id;
+        $url = '/api/v1/attendance-records/'.$this->record->id;
 
         $this->putJson($url, ['comment' => '修正'])->assertStatus(200);
         $this->deleteJson($url)->assertStatus(204);
@@ -57,7 +57,7 @@ class PublicApiAuthTest extends TestCase
     public function test_他ユーザーの勤怠を更新_削除しようとすると403が返る(): void
     {
         Sanctum::actingAs(User::factory()->create(), ['*']);
-        $url = '/api/v1/attendance-records/' . $this->record->id;
+        $url = '/api/v1/attendance-records/'.$this->record->id;
 
         $this->putJson($url, ['comment' => '修正'])
             ->assertStatus(403)

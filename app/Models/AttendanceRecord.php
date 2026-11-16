@@ -5,6 +5,8 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttendanceRecord extends Model
 {
@@ -22,27 +24,52 @@ class AttendanceRecord extends Model
         'date' => 'date',
     ];
 
-    public function user()
+    /**
+     * 勤怠の持ち主
+     *
+     * @return BelongsTo<User, AttendanceRecord>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function breaks()
+    /**
+     * この勤怠の休憩
+     *
+     * @return HasMany<BreakTime>
+     */
+    public function breaks(): HasMany
     {
         return $this->hasMany(BreakTime::class);
     }
 
-    public function applications()
+    /**
+     * この勤怠に対する修正申請
+     *
+     * @return HasMany<Application>
+     */
+    public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
     }
 
-    public function getTotalBreakTimeAttribute()
+    /**
+     * 休憩時間の合計（HH:MM）
+     *
+     * @return string 休憩時間の合計
+     */
+    public function getTotalBreakTimeAttribute(): string
     {
         return $this->formatMinutes($this->breakMinutes());
     }
 
-    public function getTotalTimeAttribute()
+    /**
+     * 休憩を除いた労働時間（HH:MM）。退勤していない場合は null
+     *
+     * @return string|null 労働時間
+     */
+    public function getTotalTimeAttribute(): ?string
     {
         $workMinutes = $this->workMinutes();
 
@@ -65,14 +92,25 @@ class AttendanceRecord extends Model
         return $stayMinutes - $this->breakMinutes();
     }
 
-    private function breakMinutes()
+    /**
+     * 終了済みの休憩時間の合計（分）
+     *
+     * @return int 休憩時間（分）
+     */
+    private function breakMinutes(): int
     {
         return $this->breaks
             ->filter(fn ($break) => $break->break_out)
             ->sum(fn ($break) => Carbon::parse($break->break_in)->diffInMinutes(Carbon::parse($break->break_out)));
     }
 
-    private function formatMinutes($minutes)
+    /**
+     * 分を HH:MM 形式にする
+     *
+     * @param  int  $minutes  分
+     * @return string HH:MM 形式の時間
+     */
+    private function formatMinutes(int $minutes): string
     {
         return sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
     }
