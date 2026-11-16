@@ -3,15 +3,24 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class AttendanceCorrectionRequest extends FormRequest
 {
-    public function authorize()
+    /**
+     * ログインの有無に関わらず許可する（認証はルートのミドルウェアで行う）
+     */
+    public function authorize(): bool
     {
         return true;
     }
 
-    public function rules()
+    /**
+     * 勤怠の修正内容を検証する
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function rules(): array
     {
         return [
             'new_clock_in' => ['required', 'date_format:H:i'],
@@ -22,7 +31,12 @@ class AttendanceCorrectionRequest extends FormRequest
         ];
     }
 
-    public function messages()
+    /**
+     * バリデーションエラーのメッセージ
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
     {
         return [
             'new_clock_in.required' => '出勤時間を入力してください',
@@ -38,7 +52,12 @@ class AttendanceCorrectionRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
+    /**
+     * 出勤・退勤・休憩の前後関係をチェックする
+     *
+     * @param  Validator  $validator  バリデータ
+     */
+    public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator) {
             if ($validator->errors()->hasAny(['new_clock_in', 'new_clock_out'])) {

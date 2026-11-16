@@ -6,12 +6,20 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
 {
-    public function authorize()
+    /**
+     * 会員登録は誰でもできるので許可する
+     */
+    public function authorize(): bool
     {
         return true;
     }
 
-    public function rules()
+    /**
+     * 会員登録の入力内容を検証する
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function rules(): array
     {
         return [
             'name' => ['required'],
@@ -21,7 +29,12 @@ class RegisterRequest extends FormRequest
         ];
     }
 
-    public function messages()
+    /**
+     * バリデーションエラーのメッセージ
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
     {
         return [
             'name.required' => 'お名前を入力してください',
