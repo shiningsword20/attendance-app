@@ -5,12 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\AttendanceRecord;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AdminAttendanceController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * 日次勤怠一覧（管理者）を表示する。一般ユーザー全員と、その日の勤怠を並べる
+     *
+     * @param  Request  $request  表示する日付（?date=Y-m-d、無ければ今日）
+     * @return View 日次勤怠一覧画面
+     */
+    public function index(Request $request): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -33,7 +40,13 @@ class AdminAttendanceController extends Controller
         return view('admin.admin-attendance-list', compact('date', 'previousDay', 'nextDay', 'users', 'attendanceRecords'));
     }
 
-    public function show($id)
+    /**
+     * 勤怠詳細（管理者）を表示する
+     *
+     * @param  string  $id  勤怠ID
+     * @return View 勤怠詳細画面
+     */
+    public function show(string $id): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -60,7 +73,13 @@ class AdminAttendanceController extends Controller
         return view('admin.admin-detail', compact('user', 'attendanceRecord'));
     }
 
-    private function formatTime($time)
+    /**
+     * 時刻を H:i 形式にする（空なら空文字）
+     *
+     * @param  string|null  $time  時刻（H:i:s）
+     * @return string H:i 形式の時刻
+     */
+    private function formatTime(?string $time): string
     {
         return $time ? Carbon::parse($time)->format('H:i') : '';
     }

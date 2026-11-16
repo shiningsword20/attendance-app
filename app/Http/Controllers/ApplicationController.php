@@ -3,12 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ApplicationController extends Controller
 {
-    public function index()
+    /**
+     * 申請一覧を表示する（管理者は全ユーザー分、一般ユーザーは自分の分）
+     *
+     * @return View 申請一覧画面
+     */
+    public function index(): View
     {
         $user = Auth::user();
 
@@ -40,7 +47,13 @@ class ApplicationController extends Controller
         return view('user.user-application-list', compact('user', 'formattedApplications'));
     }
 
-    public function show($attendance_correct_request_id)
+    /**
+     * 修正申請の承認画面（管理者）を表示する
+     *
+     * @param  string  $attendance_correct_request_id  修正申請ID
+     * @return View 修正申請承認画面
+     */
+    public function show(string $attendance_correct_request_id): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -54,7 +67,13 @@ class ApplicationController extends Controller
         return view('admin.admin-application-detail', compact('user', 'application'));
     }
 
-    public function approve($attendance_correct_request_id)
+    /**
+     * 修正申請を承認し、勤怠と休憩を申請の内容で更新する（管理者）
+     *
+     * @param  string  $attendance_correct_request_id  修正申請ID
+     * @return RedirectResponse 修正申請承認画面へのリダイレクト
+     */
+    public function approve(string $attendance_correct_request_id): RedirectResponse
     {
         // 管理者以外は承認できないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -94,8 +113,13 @@ class ApplicationController extends Controller
         return redirect("/stamp_correction_request/approve/{$application->id}");
     }
 
-    // ★提供Bladeの申請一覧の「詳細」（/application/{id}）から、申請対象の勤怠詳細へ転送する
-    public function redirectToAttendance($id)
+    /**
+     * 申請一覧の「詳細」から、申請対象の勤怠詳細画面へ転送する
+     *
+     * @param  string  $id  修正申請ID
+     * @return RedirectResponse 勤怠詳細画面へのリダイレクト
+     */
+    public function redirectToAttendance(string $id): RedirectResponse
     {
         // 自分の申請だけ開けるようにする
         $application = Application::whereHas('attendanceRecord', fn ($query) => $query->where('user_id', Auth::id()))

@@ -6,6 +6,7 @@ use App\Http\Requests\ExportAttendanceRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StaffController extends Controller
 {
-    public function index()
+    /**
+     * スタッフ一覧（管理者）を表示する
+     *
+     * @return View スタッフ一覧画面
+     */
+    public function index(): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);
@@ -24,7 +30,14 @@ class StaffController extends Controller
         return view('admin.staff-list', compact('users'));
     }
 
-    public function show(Request $request, $id)
+    /**
+     * スタッフ別の月次勤怠一覧（管理者）を表示する
+     *
+     * @param  Request  $request  表示する月（?date=Y-m、無ければ今月）
+     * @param  string  $id  スタッフ（一般ユーザー）のID
+     * @return View スタッフ別勤怠一覧画面
+     */
+    public function show(Request $request, string $id): View
     {
         // 管理者以外は見られないようにする
         abort_unless(Auth::user()->admin_status, 403);

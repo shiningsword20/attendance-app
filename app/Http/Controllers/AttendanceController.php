@@ -6,13 +6,21 @@ use App\Http\Requests\AttendanceCorrectionRequest;
 use App\Models\AttendanceRecord;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * 勤怠一覧（一般ユーザー）を表示する。月の全日を並べ、勤怠が無い日は空欄にする
+     *
+     * @param  Request  $request  表示する月（?date=Y-m、無ければ今月）
+     * @return View 勤怠一覧画面
+     */
+    public function index(Request $request): View
     {
         $user = Auth::user();
 
@@ -46,7 +54,12 @@ class AttendanceController extends Controller
         return view('user.user-attendance-list', compact('date', 'previousMonth', 'nextMonth', 'formattedAttendanceRecords'));
     }
 
-    public function create()
+    /**
+     * 勤怠登録（打刻）画面を表示する
+     *
+     * @return View 勤怠登録画面
+     */
+    public function create(): View
     {
         $user = Auth::user();
         $now = Carbon::now()->locale('ja');
@@ -57,7 +70,13 @@ class AttendanceController extends Controller
         return view('user.attendance-register', compact('user', 'formattedDate', 'formattedTime'));
     }
 
-    public function store(Request $request)
+    /**
+     * 出勤・休憩入・休憩戻・退勤を打刻する（今のステータスで押せるものだけ）
+     *
+     * @param  Request  $request  押したボタン（action）
+     * @return RedirectResponse 勤怠登録画面へのリダイレクト
+     */
+    public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
         $now = Carbon::now();
@@ -92,7 +111,13 @@ class AttendanceController extends Controller
         return redirect('/attendance');
     }
 
-    public function show($id)
+    /**
+     * 勤怠詳細（一般ユーザー）を表示する。承認待ちの申請があれば申請内容を表示する
+     *
+     * @param  string  $id  勤怠ID
+     * @return View 勤怠詳細画面
+     */
+    public function show(string $id): View
     {
         $user = Auth::user();
 
@@ -100,13 +125,8 @@ class AttendanceController extends Controller
             ->with(['breaks', 'applications.applicationBreaks'])
             ->findOrFail($id);
 
+        // 承認待ちの申請（承認済みの申請は修正の妨げにしない）
         $pendingApplication = $attendanceRecord->applications->firstWhere('is_approved', false);
-
-        // 承認済みの申請（あれば最新のもの）
-        $approvedApplication = $attendanceRecord->applications
-            ->where('is_approved', true)
-            ->sortByDesc('id')
-            ->first();
 
         // 承認待ちの申請があれば申請内容を、無ければ勤怠の内容を表示する
         $source = $pendingApplication ?? $attendanceRecord;
@@ -114,8 +134,8 @@ class AttendanceController extends Controller
 
         $data = [
             'id' => $attendanceRecord->id,
-            // 承認待ち・承認済みの申請があれば、閲覧のみにする
-            'application' => $pendingApplication ?? $approvedApplication,
+            // 承認待ちの申請があるときだけ、閲覧のみにする
+            'application' => $pendingApplication,
             'year' => $attendanceRecord->date->format('Y年'),
             'date' => $attendanceRecord->date->format('n月j日'),
             'clock_in' => $this->formatTime($source->clock_in),
@@ -130,7 +150,14 @@ class AttendanceController extends Controller
         return view('user.user-detail', compact('user', 'data'));
     }
 
-    public function update(AttendanceCorrectionRequest $request, $id)
+    /**
+     * 勤怠を修正する（管理者は直接修正、一般ユーザーは修正申請を作成）
+     *
+     * @param  AttendanceCorrectionRequest  $request  修正後の出勤・退勤・休憩・備考
+     * @param  string  $id  勤怠ID
+     * @return RedirectResponse 日次勤怠一覧または勤怠詳細画面へのリダイレクト
+     */
+    public function update(AttendanceCorrectionRequest $request, string $id): RedirectResponse
     {
         $user = Auth::user();
 
@@ -182,12 +209,24 @@ class AttendanceController extends Controller
         return redirect("/attendance/detail/{$attendanceRecord->id}");
     }
 
-    private function formatTime($time)
+    /**
+     * 時刻を H:i 形式にする（空なら空文字）
+     *
+     * @param  string|null  $time  時刻（H:i:s）
+     * @return string H:i 形式の時刻
+     */
+    private function formatTime(?string $time): string
     {
         return $time ? Carbon::parse($time)->format('H:i') : '';
     }
 
-    public function redirectToDetail($id)
+    /**
+     * 提供Bladeのリンク（/attendance/{id}）から、管理者・一般ユーザーそれぞれの勤怠詳細へ転送する
+     *
+     * @param  string  $id  勤怠ID
+     * @return RedirectResponse 勤怠詳細画面へのリダイレクト
+     */
+    public function redirectToDetail(string $id): RedirectResponse
     {
         // 管理者は管理者の勤怠詳細へ、一般ユーザーは自分の勤怠詳細へ
         if (Auth::user()->admin_status) {
