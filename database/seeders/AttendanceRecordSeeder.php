@@ -16,7 +16,7 @@ class AttendanceRecordSeeder extends Seeder
 
         User::where('email', '!=', 'user1@example.com')
             ->get()
-            ->each(fn ($user) => $this->seedRegularUser($user));
+            ->each(fn($user) => $this->seedRegularUser($user));
     }
 
     private function seedUser1($user)
@@ -28,11 +28,11 @@ class AttendanceRecordSeeder extends Seeder
             $step = $weekdays->count() / 15;
 
             collect(range(0, 14))
-                ->map(fn ($index) => $weekdays[(int) floor($index * $step)])
-                ->each(fn ($day) => $this->createAttendance($user, $day, '09:00', '18:00'));
+                ->map(fn($index) => $weekdays[(int) floor($index * $step)])
+                ->each(fn($day) => $this->createAttendance($user, $day, '09:00', '18:00'));
         });
 
-        // 当月：17日分（今日は打刻確認用に空けておく）
+        // 当月：平日の先頭から17日分（今日は打刻確認用に空けておく）
         $patterns = array_merge(
             array_fill(0, 10, ['09:00', '18:00']), // 通常
             array_fill(0, 3, ['09:00', '20:00']),  // 残業
@@ -42,10 +42,10 @@ class AttendanceRecordSeeder extends Seeder
         );
 
         $this->weekdaysOf(Carbon::now()->startOfMonth())
-            ->filter(fn ($day) => $day->lt(Carbon::today()))
+            ->reject(fn($day) => $day->isToday())
             ->take(17)
             ->values()
-            ->each(fn ($day, $index) => $this->createAttendance($user, $day, $patterns[$index][0], $patterns[$index][1]));
+            ->each(fn($day, $index) => $this->createAttendance($user, $day, $patterns[$index][0], $patterns[$index][1]));
     }
 
     private function seedRegularUser($user)
@@ -54,23 +54,23 @@ class AttendanceRecordSeeder extends Seeder
         $period = CarbonPeriod::create(Carbon::now()->startOfMonth()->subMonths(2), Carbon::yesterday());
 
         collect($period->toArray())
-            ->filter(fn ($day) => $day->isWeekday())
-            ->each(fn ($day) => $this->createAttendance($user, $day, '09:00', '18:00'));
+            ->filter(fn($day) => $day->isWeekday())
+            ->each(fn($day) => $this->createAttendance($user, $day, '09:00', '18:00'));
     }
 
     private function weekdaysOf($month)
     {
         $period = CarbonPeriod::create($month->copy()->startOfMonth(), $month->copy()->endOfMonth());
 
-        return collect($period->toArray())->filter(fn ($day) => $day->isWeekday());
+        return collect($period->toArray())->filter(fn($day) => $day->isWeekday());
     }
 
     private function createAttendance($user, $day, $clockIn, $clockOut)
     {
         $attendanceRecord = $user->attendanceRecords()->create([
             'date' => $day->toDateString(),
-            'clock_in' => $clockIn.':00',
-            'clock_out' => $clockOut.':00',
+            'clock_in' => $clockIn . ':00',
+            'clock_out' => $clockOut . ':00',
         ]);
 
         $attendanceRecord->breaks()->create([
