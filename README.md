@@ -80,7 +80,7 @@ erDiagram
     applications ||--o{ application_breaks : "1対多"
 
     users {
-        bigint id PK "NOT NULL"
+        unsigned_bigint id PK "NOT NULL"
         varchar name "NOT NULL"
         varchar email UK "NOT NULL"
         timestamp email_verified_at
@@ -91,8 +91,8 @@ erDiagram
         timestamp updated_at
     }
     attendance_records {
-        bigint id PK "NOT NULL"
-        bigint user_id FK, UK "NOT NULL"
+        unsigned_bigint id PK "NOT NULL"
+        unsigned_bigint user_id FK, UK "NOT NULL"
         date date UK "NOT NULL"
         time clock_in "NOT NULL"
         time clock_out
@@ -101,16 +101,16 @@ erDiagram
         timestamp updated_at
     }
     break_times {
-        bigint id PK "NOT NULL"
-        bigint attendance_record_id FK "NOT NULL"
+        unsigned_bigint id PK "NOT NULL"
+        unsigned_bigint attendance_record_id FK "NOT NULL"
         time break_in "NOT NULL"
         time break_out
         timestamp created_at
         timestamp updated_at
     }
     applications {
-        bigint id PK "NOT NULL"
-        bigint attendance_record_id FK "NOT NULL"
+        unsigned_bigint id PK "NOT NULL"
+        unsigned_bigint attendance_record_id FK "NOT NULL"
         time clock_in "NOT NULL"
         time clock_out "NOT NULL"
         varchar comment "NOT NULL"
@@ -119,8 +119,8 @@ erDiagram
         timestamp updated_at
     }
     application_breaks {
-        bigint id PK "NOT NULL"
-        bigint application_id FK "NOT NULL"
+        unsigned_bigint id PK "NOT NULL"
+        unsigned_bigint application_id FK "NOT NULL"
         time break_in "NOT NULL"
         time break_out "NOT NULL"
         timestamp created_at
