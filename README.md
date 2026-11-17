@@ -78,53 +78,53 @@ erDiagram
     applications ||--o{ application_breaks : "1対多"
 
     users {
-        bigint id PK
-        varchar name
-        varchar email UK
+        bigint id PK "NOT NULL"
+        varchar name "NOT NULL"
+        varchar email UK "NOT NULL"
         timestamp email_verified_at
-        varchar password
-        boolean admin_status
+        varchar password "NOT NULL"
+        boolean admin_status "NOT NULL"
         varchar remember_token
         timestamp created_at
         timestamp updated_at
     }
     attendance_records {
-        bigint id PK
-        bigint user_id FK
-        date date
-        time clock_in
+        bigint id PK "NOT NULL"
+        bigint user_id FK, UK "NOT NULL"
+        date date UK "NOT NULL"
+        time clock_in "NOT NULL"
         time clock_out
         varchar comment
         timestamp created_at
         timestamp updated_at
     }
     break_times {
-        bigint id PK
-        bigint attendance_record_id FK
-        time break_in
+        bigint id PK "NOT NULL"
+        bigint attendance_record_id FK "NOT NULL"
+        time break_in "NOT NULL"
         time break_out
         timestamp created_at
         timestamp updated_at
     }
     applications {
-        bigint id PK
-        bigint attendance_record_id FK
-        time clock_in
-        time clock_out
-        varchar comment
-        boolean is_approved
+        bigint id PK "NOT NULL"
+        bigint attendance_record_id FK "NOT NULL"
+        time clock_in "NOT NULL"
+        time clock_out "NOT NULL"
+        varchar comment "NOT NULL"
+        boolean is_approved "NOT NULL"
         timestamp created_at
         timestamp updated_at
     }
     application_breaks {
-        bigint id PK
-        bigint application_id FK
-        time break_in
-        time break_out
+        bigint id PK "NOT NULL"
+        bigint application_id FK "NOT NULL"
+        time break_in "NOT NULL"
+        time break_out "NOT NULL"
         timestamp created_at
         timestamp updated_at
     }
-```
+    ```
 
 ※ attendance_records は `user_id` と `date` の組み合わせでユニーク（1ユーザー1日1件）です。
 
